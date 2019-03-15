@@ -286,6 +286,7 @@ Status LoadSavedModel(const SessionOptions& session_options,
               << " }; Status: " << status_str << ". Took "
               << load_latency_microsecs << " microseconds.";
     load_attempt_count->GetCell(export_dir, status_str)->IncrementBy(1);
+    LOG(INFO) << "[Yitao] export_dir = " << export_dir;
   };
   if (status.ok()) {
     log_and_count(kLoadAttemptSuccess);
@@ -293,6 +294,7 @@ Status LoadSavedModel(const SessionOptions& session_options,
     log_and_count(kLoadAttemptFail);
   }
   load_latency->GetCell(export_dir)->IncrementBy(load_latency_microsecs);
+  LOG(INFO) << "[Yitao] export_dir = " << export_dir;
   return status;
 }
 

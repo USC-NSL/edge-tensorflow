@@ -27,7 +27,26 @@ limitations under the License.
 #include "tensorflow/core/platform/mutex.h"
 #include "tensorflow/core/platform/types.h"
 
+// #include "tensorflow/core/lib/monitoring/counter.h"
+#include "tensorflow/core/lib/monitoring/gauge.h"
+
 namespace tensorflow {
+
+// auto* bfc_allocator_account = monitoring::Counter<1>::New(
+//     "/tensorflow/core/common_runtime/bfc_allocator_account",
+//     "The number of times the bfc_allocator was called.", "model_path");
+
+auto* bfc_allocator_memory = monitoring::Gauge<int64, 1>::New(
+    "/tensorflow/core/common_runtime/bfc_allocator_memory",
+    "The GPU memory that has been allocated by the bfc_allocator.", "model_path");
+
+auto* bfc_allocator_memory_max = monitoring::Gauge<int64, 1>::New(
+    "/tensorflow/core/common_runtime/bfc_allocator_memory_max",
+    "The maximum GPU memory that has been allocated by the bfc_allocator.", "model_path");
+
+auto* bfc_allocator_memory_limit = monitoring::Gauge<int64, 1>::New(
+    "/tensorflow/core/common_runtime/bfc_allocator_memory_limit",
+    "The total GPU memory that can be allocated by the bfc_allocator.", "model_path");
 
 BFCAllocator::BFCAllocator(SubAllocator* sub_allocator, size_t total_memory,
                            bool allow_growth, const string& name)
@@ -47,6 +66,10 @@ BFCAllocator::BFCAllocator(SubAllocator* sub_allocator, size_t total_memory,
   // Allocate the requested amount of memory.
   memory_limit_ = total_memory;
   stats_.bytes_limit = static_cast<int64>(total_memory);
+
+  if (Name().compare("GPU_0_bfc") == 0) {
+    bfc_allocator_memory_limit->GetCell("/home/yitao/Documents/fun-project/")->Set(stats_.bytes_limit);
+  }
 
   // Create a bunch of bins of various good sizes.
 
@@ -243,6 +266,14 @@ void* BFCAllocator::AllocateRawInternal(size_t unused_alignment,
   // so all memory addresses are nicely byte aligned.
   size_t rounded_bytes = RoundedBytes(num_bytes);
 
+  // LOG(INFO) << "[Yitao] Stats before allocating " << rounded_bytes << " (" << num_bytes << ") on device " << Name() << ": \n" << stats_.DebugString();
+  // bfc_allocator_account->GetCell("/home/yitao/Documents/fun-project/")->IncrementBy(1);
+  if (Name().compare("GPU_0_bfc") == 0) {
+    // LOG(INFO) << "[Yitao] Stats before allocating " << rounded_bytes << " (" << num_bytes << ") on device " << Name() << ": \n" << stats_.DebugString();
+    bfc_allocator_memory->GetCell("/home/yitao/Documents/fun-project/")->Set(stats_.bytes_in_use);
+    bfc_allocator_memory_max->GetCell("/home/yitao/Documents/fun-project/")->Set(stats_.max_bytes_in_use);
+  }
+
   // The BFC allocator tries to find the best fit first.
   BinNum bin_num = BinNumForSize(rounded_bytes);
 
@@ -381,6 +412,11 @@ void BFCAllocator::DeallocateRawInternal(void* ptr) {
 
   // Consider coalescing it.
   FreeAndMaybeCoalesce(h);
+
+  if (Name().compare("GPU_0_bfc") == 0) {
+    // LOG(INFO) << "[Yitao] Stats after deallocating on device " << Name() << ": \n" << stats_.DebugString();
+    bfc_allocator_memory->GetCell("/home/yitao/Documents/fun-project/")->Set(stats_.bytes_in_use);
+  }
 
   if (VLOG_IS_ON(4)) {
     LOG(INFO) << "F: " << RenderOccupancy();
