@@ -54,6 +54,9 @@ thread::ThreadPool* ComputePool(const SessionOptions& options) {
 }
 
 int32 NumInterOpThreadsFromSessionOptions(const SessionOptions& options) {
+  // LOG(INFO) << "[Yitao] manually set thread pool size to " << 32 * port::NumSchedulableCPUs();
+  // return 32 * port::NumSchedulableCPUs();
+
   const int32 inter_op = options.config.inter_op_parallelism_threads();
   if (inter_op != 0) return inter_op;
 #ifdef INTEL_MKL
