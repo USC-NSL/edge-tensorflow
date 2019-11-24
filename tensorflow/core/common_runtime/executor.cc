@@ -1634,6 +1634,8 @@ void ExecutorState::Process(TaggedNode tagged_node, int64 scheduled_nsec) {
     const int id = node->id();
     const NodeItem& item = *gview.node(id);
 
+    // LOG(INFO) << "[Yitao] pop Node " << id << " " << node->type_string() << " " << node->name() << " on device " << node->assigned_device_name();
+
     // TODO(misard) Replace with a finer-grain enabling flag once we
     // add better optional debugging support.
     if (vlog_ && VLOG_IS_ON(1)) {

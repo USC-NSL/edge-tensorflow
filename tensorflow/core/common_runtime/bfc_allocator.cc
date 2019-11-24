@@ -266,7 +266,8 @@ void* BFCAllocator::AllocateRawInternal(size_t unused_alignment,
   // so all memory addresses are nicely byte aligned.
   size_t rounded_bytes = RoundedBytes(num_bytes);
 
-  LOG(INFO) << "[Yitao] Stats before allocating " << rounded_bytes << " (" << num_bytes << ") on device " << Name() << ": \n" << stats_.DebugString();
+  // LOG(INFO) << "[Yitao] Stats before allocating " << rounded_bytes << " (" << num_bytes << ") on device " << Name() << ": \n" << stats_.DebugString();
+  
   // bfc_allocator_account->GetCell("/home/yitao/Documents/fun-project/")->IncrementBy(1);
   if (Name().compare("GPU_0_bfc") == 0) {
     // LOG(INFO) << "[Yitao] Stats before allocating " << rounded_bytes << " (" << num_bytes << ") on device " << Name() << ": \n" << stats_.DebugString();
@@ -414,7 +415,7 @@ void BFCAllocator::DeallocateRawInternal(void* ptr) {
   FreeAndMaybeCoalesce(h);
 
   if (Name().compare("GPU_0_bfc") == 0) {
-    LOG(INFO) << "[Yitao] Stats after deallocating on device " << Name() << ": \n" << stats_.DebugString();
+    // LOG(INFO) << "[Yitao] Stats after deallocating on device " << Name() << ": \n" << stats_.DebugString();
     bfc_allocator_memory->GetCell("/home/yitao/Documents/fun-project/")->Set(stats_.bytes_in_use);
   }
 

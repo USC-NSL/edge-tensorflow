@@ -1200,6 +1200,8 @@ Status DirectSession::CreateExecutors(
       options, &graphs, &func_info->flib_def, run_state_args, &ek->input_types,
       &ek->output_types, &ek->collective_graph_key));
 
+  LOG(INFO) << "[Yitao] @@@@@@ graphs.size() = " << graphs.size() << " @@@@@@";
+
   if (run_state_args->is_partial_run) {
     ek->graph = std::move(run_state_args->graph);
     std::unordered_set<StringPiece, StringPieceHasher> names;
@@ -1235,6 +1237,8 @@ Status DirectSession::CreateExecutors(
   for (auto iter = graphs.begin(); iter != graphs.end(); ++iter) {
     const string& partition_name = iter->first;
     std::unique_ptr<Graph>& partition_graph = iter->second;
+
+    LOG(INFO) << "[Yitao] @@@@@@ graph.num_nodes() = " << partition_graph->num_nodes() << " @@@@@@ with partition_name = " << partition_name;
 
     Device* device;
     TF_RETURN_IF_ERROR(device_mgr_->LookupDevice(partition_name, &device));
